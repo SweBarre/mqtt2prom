@@ -1,0 +1,112 @@
+# mqtt:
+#   broker: tcp://mqtt.rre.nu:1883
+#   qos: 0
+#   subscribe: "#"
+#   clientid: mqtt2prom2
+#   username:
+#   password: 
+
+# web:
+#   listen: ":9337"
+#   metricpath: /metrics
+
+
+metrics:
+  sensor_temperature_celsius:
+    type: gauge
+    help: Temperature in celsius
+  sensor_humidity_percent:
+    type: gauge
+    help: Humidity in percent
+  sensor_linkquality_rssi:
+    type: gauge
+    help: Quality of link to sensor
+  sensor_battery_level:
+    type: gauge
+    help: Battery level on sensor
+  sensor_power_usage_watt:
+    type: gauge
+    help: power cunsumption in watt
+  sensor_line_voltage:
+    type: gauge
+    help: Voltage on powerline
+  sensor_current_ampere:
+    type: gauge
+    help: Current in ampere
+  sensor_humidity_percent:
+    type: gauge
+    help: humidity in percent
+  sensor_pressure_hpa:
+    type: gauge
+    help: Pressure in hypothalamic pituitary adrenal
+  sensor_battery_millivolt:
+    type: gauge
+    help: Battery voltage in milli volt
+
+templates:
+  rfxcom_sensor:
+    type: json
+    map:
+      temperature.value: sensor_temperature_celsius
+      humidity.value: sensor_humidity_percent
+      status.rssi: sensor_linkquality_rssi
+      status.battery: sensor_battery_level
+  zigbee_poweroutlet:
+    type: json
+    map:
+      power: sensor_power_usage_watt
+      voltage: sensor_line_voltage
+      current: sensor_current_ampere
+      linkquality: sensor_linkquality_rssi
+  zigbee_sensor:
+    type: json
+    map:
+      temperature: sensor_temperature_celsius
+      humidity: sensor_humidity_percent
+      linkquality: sensor_linkquality_rssi
+      battery: sensor_battery_level
+      voltage: sensor_battery_millivolt
+      pressure: sensor_pressure_hpa
+
+
+jobs:
+  - job: rfxcom
+    topic_prefix: nodered/rfxcom
+    instances:
+      - name: outside
+        sensors:
+          - id: backside
+            topic: outside/sensor
+            template: rfxcom_sensor
+      - name: kitchen
+        sensors:
+          - id: kitchen
+            topic: kitchen/sensor
+            template: rfxcom_sensor
+          - id: ticker
+            topic: ticker
+            type:
+              type: value
+              map:
+                metric: sensor_battery_level
+  - job: zigbee
+    topic_prefix: zigbee2mqtt
+    instances:
+      - name: kitchen
+        topic_prefix:
+        sensors:
+          - id: coffee_pot
+            topic: coffee_pot
+            template: zigbee_poweroutlet
+      - name: laundry
+        topic_prefix:
+        sensors:
+          - id: laundry
+            topic: laundry
+            template: zigbee_sensor
+      - name: computer_room
+        topic_prefix:
+        sensors:
+          - id: computer_room
+            topic: computer_room
+            template: zigbee_sensor
