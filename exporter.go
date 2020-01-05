@@ -52,7 +52,7 @@ func getJSONValue(payload []byte, pattern string) (float64, bool) {
 	}
 	value, ok := data[pat[len(pat)-1]].(float64)
 	if !ok {
-		log.Errorf("json value is not float64 type. %s %v", pattern, payload)
+		log.Errorf("json value is not float64 type. %s %s", pattern, string(payload))
 		return 0, false
 	}
 	return value, true
