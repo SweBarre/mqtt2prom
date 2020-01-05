@@ -71,13 +71,12 @@ func updateMetric(topic string, payload []byte) {
 		log.Debugln("Parsing json metrics")
 		for pattern, metricname := range sensordata[topic].Type.Map {
 			value, ok := getJSONValue(payload, pattern)
-			if !ok {
-				break
-			}
-			if config.Metrics[metricname].Type == "gauge" {
-				gaugeMetrics[metricname].With(sensordata[topic].Labels).Set(value)
-			} else {
-				log.Errorf("Unkonwn metric type '%s' defined for %s", config.Metrics[metricname].Type, metricname)
+			if ok {
+				if config.Metrics[metricname].Type == "gauge" {
+					gaugeMetrics[metricname].With(sensordata[topic].Labels).Set(value)
+				} else {
+					log.Errorf("Unkonwn metric type '%s' defined for %s", config.Metrics[metricname].Type, metricname)
+				}
 			}
 		}
 	} else if sensordata[topic].Type.Type == "value" {
